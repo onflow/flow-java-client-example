@@ -23,9 +23,7 @@ class App {
         var payerAddress = new Address(Hex.decode("f8d6e0586b0a20c7"));
 
         PrivateKey payerPrivateKey = new ECDSAp256_SHA3_256PrivateKey(
-                new BigInteger(
-                        Hex.decode("c7d5bc88cb38a83e5bc7769f06d360642f90361d087aaae9d87b5a2f2c1382fe")
-                )
+                new BigInteger("ceff2bd777f3b5c81d7edfd191c99239cb9c56fc64946741339a55fd094586c9", 16)
         );
 
         var managedChannel = ManagedChannelBuilder.forAddress(
