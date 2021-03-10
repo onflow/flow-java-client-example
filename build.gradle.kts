@@ -5,6 +5,7 @@ plugins {
 repositories {
     mavenCentral()
     maven { url = uri("https://jitpack.io") }
+    maven { url = uri("https://dl.bintray.com/ethereum/maven/") }
 }
 
 dependencies {
@@ -15,6 +16,8 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 
     implementation("org.onflow:flow-jvm-sdk:0.1")
+    implementation("org.json:json:20201115")
+    implementation("org.ethereum:ethereumj-core:1.12.0-RELEASE")
 }
 
 application {

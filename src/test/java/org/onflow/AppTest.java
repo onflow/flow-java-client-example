@@ -3,12 +3,40 @@
  */
 package org.onflow;
 
+import org.bouncycastle.util.encoders.Hex;
+import org.onflow.sdk.Address;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.onflow.sdk.KeysKt.InitCrypto;
 
 class AppTest {
-    @Test void appHasAGreeting() {
-        App classUnderTest = new App();
-        assertNotNull(classUnderTest.getGreeting(), "app should have a greeting");
+
+    public static final String servicePrivateKeyHex = "ceff2bd777f3b5c81d7edfd191c99239cb9c56fc64946741339a55fd094586c9";
+
+    public static final String userPrivateKeyHex = "c5e1ebe04e10d687a4468502992965f155c7197fa15eb5b39ce15b4ae7c0a626";
+    public static final String userPublicKeyHex = "199e54b7031b6d96f881b94ef3582deca90f7a2c7d180899193a22712be264bdbce5de5eac3e8afaedd75c48f620395f093af75eee20b617a7bdbae08e4fcb41";
+
+    @Test void createAccount() throws Exception {
+        InitCrypto();
+
+        App app = new App("localhost", 3569, servicePrivateKeyHex);
+
+        // service account address
+        var payer = new Address(Hex.decode("f8d6e0586b0a20c7"));
+
+        app.createAccount(payer, userPublicKeyHex);
+    }
+
+    @Test void transferTokens() throws Exception {
+        InitCrypto();
+
+        App app = new App("localhost", 3569, servicePrivateKeyHex);
+
+        // service account address
+        var sender = new Address(Hex.decode("f8d6e0586b0a20c7"));
+        var recipient = app.createAccount(sender, userPublicKeyHex);
+        var amount = "10.0";
+
+        app.transferTokens(sender, recipient, amount);
     }
 }
