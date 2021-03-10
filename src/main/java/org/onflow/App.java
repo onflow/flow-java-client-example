@@ -173,9 +173,9 @@ class App {
 
         Object[] accountKey = {
                 Hex.decode(publicKeyHex),
-                2,
-                3,
-                1000,
+                2,    // Signature algorithm: ECDSA_P256
+                3,    // Hash algorithm: SHA3_256
+                1000, // Key Weight: Full weight (1000/1000)
         };
 
         var encodedAccountKey = RLP.encode(accountKey);
