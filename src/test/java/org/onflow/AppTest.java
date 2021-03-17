@@ -43,7 +43,7 @@ class AppTest {
         var sender = serviceAccountAddress;
         var recipient = app.createAccount(sender, userPublicKeyHex);
 
-        // amount: 10.00000001
+        // FLOW amounts always have 8 decimal places
         var amount = new BigDecimal("10.00000001");
 
         var balance1 = app.getAccountBalance(recipient);
