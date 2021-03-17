@@ -14,12 +14,11 @@ import org.ethereum.util.RLP;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.List;
-
-import static org.onflow.sdk.KeysKt.InitCrypto;
 
 class App {
 
@@ -44,14 +43,27 @@ class App {
         return new ECDSAp256_SHA3_256PrivateKey(new BigInteger(privateKeyHex, 16));
     }
 
+    public AccountOuterClass.Account getAccount(Address address) {
+        var getAccountRequest = Access.GetAccountRequest.newBuilder().setAddress(
+                ByteString.copyFrom(address.getBytes())
+        ).build();
+
+        return this.accessAPI.getAccount(getAccountRequest).getAccount();
+    }
+
+    public BigDecimal getAccountBalance(Address address) {
+        var account = this.getAccount(address);
+        return new BigDecimal(Long.toUnsignedString(account.getBalance())).movePointLeft(8);
+    }
+
     private AccountOuterClass.AccountKey getAccountKey(Address address, int keyIndex) {
         var getAccountRequest = Access.GetAccountRequest.newBuilder().setAddress(
                 ByteString.copyFrom(address.getBytes())
         ).build();
 
-        var accountResponse = this.accessAPI.getAccount(getAccountRequest);
+        var account = this.getAccount(address);
 
-        return accountResponse.getAccount().getKeys(keyIndex);
+        return account.getKeys(keyIndex);
     }
 
     private Identifier getLatestBlockID() {
@@ -215,7 +227,11 @@ class App {
         return this.getAccountCreatedAddress(txResult);
     }
 
-    public void transferTokens(Address senderAddress, Address recipientAddress, String amount) throws Exception {
+    public void transferTokens(Address senderAddress, Address recipientAddress, BigDecimal amount) throws Exception {
+
+        if (amount.scale() != 8) {
+            throw new Exception("FLOW amount must have exactly 8 decimal places of precision (e.g. 10.00000000)");
+        }
 
         var senderAccountKey = this.getAccountKey(senderAddress, 0);
 
@@ -228,7 +244,7 @@ class App {
 
         var amountJSON = new JSONObject();
         amountJSON.put("type", "UFix64");
-        amountJSON.put("value", amount);
+        amountJSON.put("value", amount.toPlainString());
 
         var recipientJSON = new JSONObject();
         recipientJSON.put("type", "Address");
