@@ -9,11 +9,11 @@ First, install the [Flow CLI](https://docs.onflow.org/flow-cli).
 Start the [Flow Emulator](https://docs.onflow.org/emulator) in the main directory of this repository:
 
 ```sh
-flow emulator start
+flow emulator start -v
 ```
 
 Then, in a separate terminal, run the application with Gradle:
 
 ```sh
-./gradlew run
+./gradlew test -i
 ```
