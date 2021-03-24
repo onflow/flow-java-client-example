@@ -14,7 +14,7 @@ dependencies {
     // Use JUnit Jupiter Engine for testing.
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 
-    implementation("org.onflow:flow-jvm-sdk:0.1")
+    implementation("org.onflow:flow-jvm-sdk:0.1.1")
 }
 
 application {
