@@ -1,24 +1,28 @@
-package org.onflow;
+package org.onflow.examples.java;
 
-import com.google.protobuf.ByteString;
-import io.grpc.ManagedChannelBuilder;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+
 import org.bouncycastle.util.encoders.Hex;
 import org.onflow.protobuf.access.Access;
 import org.onflow.protobuf.access.AccessAPIGrpc;
 import org.onflow.protobuf.entities.AccountOuterClass;
 import org.onflow.protobuf.entities.TransactionOuterClass;
 import org.onflow.protobuf.entities.TransactionOuterClass.Transaction;
-import org.onflow.sdk.*;
-import org.json.JSONObject;
-import org.ethereum.util.RLP;
+import org.onflow.sdk.Address;
+import org.onflow.sdk.ECDSAp256_SHA3_256PrivateKey;
+import org.onflow.sdk.Identifier;
+import org.onflow.sdk.PrivateKey;
+import org.onflow.sdk.ProposalKey;
+import org.onflow.sdk.TransactionSignature;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.MathContext;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import com.google.protobuf.ByteString;
+
+import io.grpc.ManagedChannelBuilder;
 
 class App {
 

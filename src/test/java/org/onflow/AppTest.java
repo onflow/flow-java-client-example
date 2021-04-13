@@ -4,11 +4,11 @@
 package org.onflow;
 
 import org.bouncycastle.util.encoders.Hex;
+import org.onflow.examples.java.App;
 import org.onflow.sdk.Address;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.onflow.sdk.KeysKt.InitCrypto;
