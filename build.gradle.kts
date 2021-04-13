@@ -1,3 +1,6 @@
+
+val FLOW_JVM_SDK_VERSION = "0.1.1"
+
 plugins {
     application
 }
@@ -15,7 +18,7 @@ dependencies {
     // Use JUnit Jupiter Engine for testing.
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 
-    implementation("org.onflow:flow-jvm-sdk:0.1.1")
+    implementation("org.onflow:flow-jvm-sdk:${FLOW_JVM_SDK_VERSION}")
     implementation("org.json:json:20201115")
     implementation("org.ethereum:ethereumj-core:1.12.0-RELEASE")
 }
