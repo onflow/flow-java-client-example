@@ -3,166 +3,108 @@ package org.onflow.examples.java;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 
-import org.bouncycastle.util.encoders.Hex;
-import org.onflow.protobuf.access.Access;
-import org.onflow.protobuf.access.AccessAPIGrpc;
-import org.onflow.protobuf.entities.AccountOuterClass;
-import org.onflow.protobuf.entities.TransactionOuterClass;
-import org.onflow.protobuf.entities.TransactionOuterClass.Transaction;
-import org.onflow.sdk.Address;
-import org.onflow.sdk.ECDSAp256_SHA3_256PrivateKey;
-import org.onflow.sdk.Identifier;
+
+import org.onflow.sdk.AddressField;
+import org.onflow.sdk.Crypto;
+import org.onflow.sdk.FlowAccessApi;
+import org.onflow.sdk.Flow;
+import org.onflow.sdk.FlowAccount;
+import org.onflow.sdk.FlowAccountKey;
+import org.onflow.sdk.FlowAddress;
+import org.onflow.sdk.FlowArgument;
+import org.onflow.sdk.FlowId;
+import org.onflow.sdk.FlowPublicKey;
+import org.onflow.sdk.FlowScript;
+import org.onflow.sdk.FlowTransaction;
+import org.onflow.sdk.FlowTransactionProposalKey;
+import org.onflow.sdk.FlowTransactionResult;
+import org.onflow.sdk.FlowTransactionStatus;
+import org.onflow.sdk.HashAlgorithm;
+import org.onflow.sdk.NumberField;
 import org.onflow.sdk.PrivateKey;
-import org.onflow.sdk.ProposalKey;
-import org.onflow.sdk.TransactionSignature;
+import org.onflow.sdk.SignatureAlgorithm;
+import org.onflow.sdk.Signer;
+import org.onflow.sdk.StringField;
 
-import com.google.protobuf.ByteString;
+public class App {
 
-import io.grpc.ManagedChannelBuilder;
-
-class App {
-
-    private AccessAPIGrpc.AccessAPIBlockingStub accessAPI;
     private PrivateKey privateKey;
+    private FlowAccessApi api;
+
+    private static final FlowAddress SERVICE_ACCOUNT_ADDRESS = new FlowAddress("f8d6e0586b0a20c7");
+    private static final String SERVICE_ACCOUNT_PRIVATE_KEY = "b2bee95fcf0afab690c2f61d8787de0dc9cb2a64eee797d11f6ae8bc29d5f92b";
 
     public App(String host, int port, String privateKeyHex) {
-        this.accessAPI = this.getAccessAPI(host, port);
+        this.api = this.getAccessAPI(host, port);
         this.privateKey = this.getPrivateKey(privateKeyHex);
     }
 
-    private AccessAPIGrpc.AccessAPIBlockingStub getAccessAPI(String host, int port) {
-        var managedChannel = ManagedChannelBuilder.forAddress(
-                host,
-                port
-        ).usePlaintext().build();
-
-        return AccessAPIGrpc.newBlockingStub(managedChannel);
+    FlowAccessApi getAccessAPI(String host, int port) {
+        return Flow.INSTANCE.newAccessApi(host, port, false, Flow.DEFAULT_USER_AGENT);
     }
 
     private PrivateKey getPrivateKey(String privateKeyHex) {
-        return new ECDSAp256_SHA3_256PrivateKey(new BigInteger(privateKeyHex, 16));
+        return Crypto.INSTANCE.decodePrivateKey(privateKeyHex, SignatureAlgorithm.ECDSA_P256);
     }
 
-    public AccountOuterClass.Account getAccount(Address address) {
-        var getAccountRequest = Access.GetAccountRequest.newBuilder().setAddress(
-                ByteString.copyFrom(address.getBytes())
-        ).build();
-
-        return this.accessAPI.getAccount(getAccountRequest).getAccount();
+    public FlowAccount getAccount(FlowAddress address) {
+        return api.getAccountAtLatestBlock(address);
     }
 
-    public BigDecimal getAccountBalance(Address address) {
-        var account = this.getAccount(address);
-        return new BigDecimal(Long.toUnsignedString(account.getBalance())).movePointLeft(8);
+    public BigDecimal getAccountBalance(FlowAddress address) {
+        var account = getAccount(address);
+        return BigDecimal.valueOf(account.getBalance());
     }
 
-    private AccountOuterClass.AccountKey getAccountKey(Address address, int keyIndex) {
-        var getAccountRequest = Access.GetAccountRequest.newBuilder().setAddress(
-                ByteString.copyFrom(address.getBytes())
-        ).build();
-
-        var account = this.getAccount(address);
-
-        return account.getKeys(keyIndex);
+    private FlowAccountKey getAccountKey(FlowAddress address, int keyIndex) {
+        FlowAccount account = getAccount(address);
+        return account.getKeys().get(keyIndex);
     }
 
-    private Identifier getLatestBlockID() {
-        var getLatestBlockRequest = Access.GetLatestBlockHeaderRequest
-                .newBuilder().setIsSealed(true).build();
-        var latestBlock = this.accessAPI.getLatestBlockHeader(getLatestBlockRequest);
-        return  new Identifier(latestBlock.getBlock().getId().toByteArray());
+    private FlowId getLatestBlockID() {
+        return api.getLatestBlock(true).getId();
     }
 
-    private TransactionSignature signTransaction(Address address, int keyIndex, byte[] message) {
-        byte[] rawSignature = this.privateKey.Sign(message);
-
-        return new TransactionSignature(
-                address,
-                0,
-                keyIndex,
-                rawSignature
-        );
+    private FlowId sendTransaction(FlowTransaction tx, FlowAddress signerAddress, Signer signer) {
+        tx.addPayloadSignature(signerAddress, 0, signer);
+        tx.addEnvelopeSignature(signerAddress, 0, signer);
+        return api.sendTransaction(tx);
     }
 
-    private Identifier sendTransaction(org.onflow.sdk.Transaction tx, TransactionSignature payerSignature) {
-        var transactionRequest = Transaction.newBuilder()
-                .setScript(ByteString.copyFrom(tx.getScript()))
-                .setReferenceBlockId(ByteString.copyFrom(tx.getReferenceBlockID().getBytes()))
-                .setGasLimit(tx.getGasLimit())
-                .setProposalKey(
-                        Transaction.ProposalKey.newBuilder()
-                                .setAddress(ByteString.copyFrom(tx.getProposalKey().getAddress().getBytes()))
-                                .setKeyId((int)tx.getProposalKey().getKeyIndex())
-                                .setSequenceNumber((int)tx.getProposalKey().getSequenceNumber())
-                )
-                .setPayer(ByteString.copyFrom(tx.getPayer().getBytes()))
-                .addAuthorizers(ByteString.copyFrom(tx.getPayer().getBytes()))
-                .addEnvelopeSignatures(
-                        Transaction.Signature.newBuilder()
-                                .setAddress(ByteString.copyFrom(payerSignature.getAddress().getBytes()))
-                                .setKeyId(payerSignature.getKeyIndex())
-                                .setSignature(ByteString.copyFrom(payerSignature.getSignature()))
-                );
-
-        for (byte[] arg : tx.getArguments()) {
-            transactionRequest.addArguments(ByteString.copyFrom(arg));
-        }
-
-        var sendTransactionRequest = Access.SendTransactionRequest
-                .newBuilder().setTransaction(transactionRequest).build();
-
-        var sendTransactionResponse = accessAPI.sendTransaction(sendTransactionRequest);
-
-        return new Identifier(sendTransactionResponse.getId().toByteArray());
+    private FlowTransactionResult getTransactionResult(FlowId txID) throws Exception {
+        return api.getTransactionResultById(txID);
     }
 
-    private Access.TransactionResultResponse getTransactionResult(Identifier txID) throws Exception {
-        var txResult = this.accessAPI.getTransactionResult(
-                Access.GetTransactionRequest.newBuilder().setId(ByteString.copyFrom(txID.getBytes())).build()
-        );
-
-        if (txResult.getErrorMessage() != "") {
-            throw new Exception(txResult.getErrorMessage());
-        }
-
-        return txResult;
-    }
-
-    private Access.TransactionResultResponse waitForSeal(Identifier txID) throws Exception {
-        Access.TransactionResultResponse txResult;
-
+    private FlowTransactionResult waitForSeal(FlowId txID) throws Exception {
         while (true) {
-            txResult = this.getTransactionResult(txID);
-
-            if (txResult.getStatus() == TransactionOuterClass.TransactionStatus.SEALED) {
-               return txResult;
-            }
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            FlowTransactionResult transactionResult = getTransactionResult(txID);
+            if (transactionResult.getStatus().equals(FlowTransactionStatus.SEALED)) {
+                return transactionResult;
             }
         }
     }
 
-    private Address getAccountCreatedAddress(Access.TransactionResultResponse txResult) {
-        var eventPayload = txResult.getEventsList().get(0).getPayload();
+    private FlowAddress getAccountCreatedFlowAddress(FlowTransactionResult txResult) {
+        var eventPayload = txResult.getEvents().get(0).getPayload();
 
+
+        /*
         JSONObject obj = new JSONObject(eventPayload.toStringUtf8());
 
-        String addressHex = obj
+        String FlowAddressHex = obj
                 .getJSONObject("value")
                 .getJSONArray("fields")
                 .getJSONObject(0)
                 .getJSONObject("value")
                 .getString("value");
 
-        return new Address(addressHex.substring(2));
+        return new FlowAddress(FlowAddressHex.substring(2)); */
+
+        return null;
     }
 
     private byte[] loadTransaction(String name) {
@@ -176,112 +118,98 @@ class App {
         return null;
     }
 
-    public Address createAccount(Address payerAddress, String publicKeyHex) throws Exception {
-
-        var payerAccountKey = this.getAccountKey(payerAddress, 0);
-
-        var latestBlockID = this.getLatestBlockID();
+    public FlowAddress createAccount(FlowAddress payerFlowAddress, String publicKeyHex) throws Exception {
 
         var script = this.loadTransaction("create_account.cdc");
+        var latestBlockId = api.getLatestBlock(true);
 
-        var authorizers = new ArrayList<Address>();
-        authorizers.add(payerAddress);
+        // service account
+        var address = SERVICE_ACCOUNT_ADDRESS;
+        var account = api.getAccountAtLatestBlock(address);
+        var privateKey = Crypto.INSTANCE.decodePrivateKey(
+                SERVICE_ACCOUNT_PRIVATE_KEY,
+                SignatureAlgorithm.ECDSA_P256);
 
-        Object[] accountKey = {
-                Hex.decode(publicKeyHex),
-                2,    // Signature algorithm: ECDSA_P256
-                3,    // Hash algorithm: SHA3_256
-                1000, // Key Weight: Full weight (1000/1000)
-        };
+        if (account == null) {
+            return null;
+        }
 
-        var encodedAccountKey = RLP.encode(accountKey);
+        var newPubKey = new FlowPublicKey(null);
+        var accountKey = new FlowAccountKey(123,
+                newPubKey,
+                SignatureAlgorithm.ECDSA_P256,
+                HashAlgorithm.SHA2_256,
+                1,
+                0,
+                false);
 
-        var publicKeyJSON = new JSONObject();
-        publicKeyJSON.put("type", "String");
-        publicKeyJSON.put("value", Hex.toHexString(encodedAccountKey));
-
-        var args = new ArrayList<byte[]>();
-        args.add(publicKeyJSON.toString().getBytes(StandardCharsets.UTF_8));
-
-        var tx = new org.onflow.sdk.Transaction(
-                script,
-                args,
-                latestBlockID,
-                100,
-                new ProposalKey(
-                        payerAddress,
-                        payerAccountKey.getIndex(),
-                        payerAccountKey.getSequenceNumber()
-                ),
-                payerAddress,
-                authorizers,
+        var tx = new FlowTransaction(
+                new FlowScript(script),
+                Arrays.asList(new FlowArgument(new StringField(newPubKey.getStringValue()))),
+                latestBlockId.getId(),
+                50L,
+                new FlowTransactionProposalKey(address, accountKey.getId(), Long.valueOf(accountKey.getSequenceNumber())),
+                address,
+                Arrays.asList(address),
                 new ArrayList<>(),
-                new ArrayList<>()
-        );
+                new ArrayList<>());
 
-        var payerSignature = this.signTransaction(
-            payerAddress, payerAccountKey.getIndex(), tx.envelopCanonicalForm()
-        );
+        // sign the transaction
+        var signer = Crypto.INSTANCE.getSigner(privateKey, HashAlgorithm.SHA2_256);
+        tx = tx.addPayloadSignature(address, 0, signer);
+        tx = tx.addEnvelopeSignature(address, 0, signer);
 
-        var txID = this.sendTransaction(tx, payerSignature);
+        FlowId flowId = api.sendTransaction(tx);
 
-        // wait for transaction to be sealed
-        var txResult = this.waitForSeal(txID);
-
-        return this.getAccountCreatedAddress(txResult);
+        FlowTransactionResult result = this.waitForSeal(flowId);
+        return this.getAccountCreatedFlowAddress(result);
     }
 
-    public void transferTokens(Address senderAddress, Address recipientAddress, BigDecimal amount) throws Exception {
+    public void transferTokens(FlowAddress senderFlowAddress, FlowAddress recipientFlowAddress, BigDecimal amount) throws Exception {
 
         if (amount.scale() != 8) {
             throw new Exception("FLOW amount must have exactly 8 decimal places of precision (e.g. 10.00000000)");
         }
 
-        var senderAccountKey = this.getAccountKey(senderAddress, 0);
+        var senderAccountKey = this.getAccountKey(senderFlowAddress, 0);
+        var privateKey = Crypto.INSTANCE.decodePrivateKey(
+                SERVICE_ACCOUNT_PRIVATE_KEY,
+                SignatureAlgorithm.ECDSA_P256);
 
         var latestBlockID = this.getLatestBlockID();
 
         var script = this.loadTransaction("transfer_flow.cdc");
 
-        var authorizers = new ArrayList<Address>();
-        authorizers.add(senderAddress);
+        var authorizers = new ArrayList<FlowAddress>();
+        authorizers.add(senderFlowAddress);
 
-        var amountJSON = new JSONObject();
-        amountJSON.put("type", "UFix64");
-        amountJSON.put("value", amount.toPlainString());
 
-        var recipientJSON = new JSONObject();
-        recipientJSON.put("type", "Address");
-        recipientJSON.put("value", "0x"+Hex.toHexString(recipientAddress.getBytes()));
+        var amountField = new FlowArgument(new NumberField("UFix64", amount.toPlainString()));
+        var addressField = new FlowArgument(new AddressField(recipientFlowAddress.getStringValue()));
+        var args = Arrays.asList(amountField, addressField);
 
-        var args = new ArrayList<byte[]>();
-        args.add(amountJSON.toString().getBytes(StandardCharsets.UTF_8));
-        args.add(recipientJSON.toString().getBytes(StandardCharsets.UTF_8));
-
-        var tx = new org.onflow.sdk.Transaction(
-                script,
+        var tx = new FlowTransaction(
+                new FlowScript(script),
                 args,
                 latestBlockID,
-                100,
-                new ProposalKey(
-                        senderAddress,
-                        senderAccountKey.getIndex(),
-                        senderAccountKey.getSequenceNumber()
-                ),
-                senderAddress,
-                authorizers,
+                100L,
+                new FlowTransactionProposalKey(
+                        senderFlowAddress,
+                        senderAccountKey.getId(),
+                        Long.valueOf(senderAccountKey.getSequenceNumber())),
+                senderFlowAddress,
+                Arrays.asList(senderFlowAddress),
                 new ArrayList<>(),
-                new ArrayList<>()
-        );
+                new ArrayList<>());
 
-        var payerSignature = this.signTransaction(
-                senderAddress, senderAccountKey.getIndex(), tx.envelopCanonicalForm()
-        );
+        var signer = Crypto.INSTANCE.getSigner(privateKey, HashAlgorithm.SHA2_256);
+        tx = tx.addPayloadSignature(senderFlowAddress, 0, signer);
+        tx = tx.addEnvelopeSignature(senderFlowAddress, 0, signer);
 
-        var txID = this.sendTransaction(tx, payerSignature);
+        FlowId flowId = api.sendTransaction(tx);
 
         // wait for transaction to be sealed
-        this.waitForSeal(txID);
+        this.waitForSeal(flowId);
     }
 
     public static void main(String[] args) { }

@@ -5,7 +5,7 @@ plugins {
     application
 }
 
-val FLOW_JVM_SDK_VERSION    = "0.1.1"
+val FLOW_JVM_SDK_VERSION    = "0.2.0-SNAPSHOT"
 val USE_KOTLIN_APP          = project.findProperty("USE_KOTLIN_APP") == "true"
 
 repositories {
