@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.google.common.io.BaseEncoding;
+import org.bouncycastle.util.encoders.Hex;
 import org.onflow.sdk.AddressField;
 import org.onflow.sdk.Crypto;
 import org.onflow.sdk.Flow;
@@ -45,14 +46,14 @@ public final class App {
                 0,
                 new FlowPublicKey(publicKeyHex),
                 SignatureAlgorithm.ECDSA_P256,
-                HashAlgorithm.SHA3_256,
-                1000,
+                HashAlgorithm.SHA2_256,
+                1,
                 0,
                 false);
 
         FlowTransaction tx = new FlowTransaction(
                 new FlowScript(loadScript("create_account.cdc")),
-                Arrays.asList(new FlowArgument(new StringField(newAccountPublicKey.toString()))),
+                Arrays.asList(new FlowArgument(new StringField(Hex.toHexString(newAccountPublicKey.getEncoded())))),
                 this.getLatestBlockID(),
                 100L,
                 new FlowTransactionProposalKey(
@@ -65,7 +66,8 @@ public final class App {
                 new ArrayList<>());
 
         Signer signer = Crypto.getSigner(this.privateKey, payerAccountKey.getHashAlgo());
-        tx = tx.addEnvelopeSignature(payerAddress, payerAccountKey.getId(), signer);
+        tx = tx.addPayloadSignature(payerAddress, 0, signer);
+        tx = tx.addEnvelopeSignature(payerAddress, 0, signer);
 
         FlowId txID = this.accessAPI.sendTransaction(tx);
         FlowTransactionResult txResult = this.waitForSeal(txID);
@@ -145,6 +147,11 @@ public final class App {
     }
 
     private FlowAddress getAccountCreatedAddress(FlowTransactionResult txResult) {
+        if (!txResult.getStatus().equals(FlowTransactionStatus.SEALED)
+            || txResult.getErrorMessage().length() > 0) {
+            return null;
+        }
+
         String rez = txResult
                 .getEvents()
                 .get(0)
