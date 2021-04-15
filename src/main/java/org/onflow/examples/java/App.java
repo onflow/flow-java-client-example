@@ -160,7 +160,7 @@ public final class App {
                 .getFields()[0]
                 .getValue()
                 .getValue().toString();
-        return new FlowAddress(rez);
+        return new FlowAddress(rez.substring(2));
     }
 
     private byte[] loadScript(String name) {

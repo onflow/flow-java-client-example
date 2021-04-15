@@ -7,15 +7,6 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/*
-INFO[0000] ⚙️   Using service account 0xf8d6e0586b0a20c7
-serviceAddress=f8d6e0586b0a20c7
-serviceHashAlgo=SHA3_256
-servicePrivKey=b2bee95fcf0afab690c2f61d8787de0dc9cb2a64eee797d11f6ae8bc29d5f92b
-servicePubKey=16285d55d0f6eb0de3978afd4f406f3796cc750dcd6e5877ba0da9837acf8dc8c30cc098334b8e0a5b5ee0ff6c5e5813178b88a9035f97417e869e9fd58dd7eb
-serviceSigAlgo=ECDSA_P256
-
- */
 class AppTest {
 
     public static final String SERVICE_PRIVATE_KEY_HEX = "b2bee95fcf0afab690c2f61d8787de0dc9cb2a64eee797d11f6ae8bc29d5f92b";
