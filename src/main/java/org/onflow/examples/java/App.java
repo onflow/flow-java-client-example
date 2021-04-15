@@ -5,21 +5,16 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import com.google.common.io.BaseEncoding;
-import kotlin.collections.CollectionsKt;
-import org.jetbrains.annotations.NotNull;
 import org.onflow.sdk.AddressField;
 import org.onflow.sdk.Crypto;
-import org.onflow.sdk.Field;
 import org.onflow.sdk.Flow;
 import org.onflow.sdk.FlowAccessApi;
 import org.onflow.sdk.FlowAccount;
 import org.onflow.sdk.FlowAccountKey;
 import org.onflow.sdk.FlowAddress;
 import org.onflow.sdk.FlowArgument;
-import org.onflow.sdk.FlowEvent;
 import org.onflow.sdk.FlowId;
 import org.onflow.sdk.FlowPublicKey;
 import org.onflow.sdk.FlowScript;
@@ -65,7 +60,7 @@ public final class App {
                         payerAccountKey.getId(),
                         payerAccountKey.getSequenceNumber()),
                 payerAddress,
-                CollectionsKt.listOf(payerAddress),
+                Arrays.asList(payerAddress),
                 new ArrayList<>(),
                 new ArrayList<>());
 
@@ -97,7 +92,7 @@ public final class App {
                         senderAccountKey.getId(),
                         senderAccountKey.getSequenceNumber()),
                 senderAddress,
-                CollectionsKt.listOf(senderAddress),
+                Arrays.asList(senderAddress),
                 new ArrayList<>(),
                 new ArrayList<>());
 
