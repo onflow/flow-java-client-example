@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import com.google.common.io.BaseEncoding;
 import org.bouncycastle.util.encoders.Hex;
 import org.onflow.sdk.AddressField;
 import org.onflow.sdk.Crypto;
@@ -171,9 +170,5 @@ public final class App {
         }
 
         return null;
-    }
-
-    private byte[] hexToBytes(String hex) {
-        return BaseEncoding.base16().lowerCase().decode(hex);
     }
 }
