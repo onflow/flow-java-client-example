@@ -12,14 +12,14 @@ const val servicePrivateKeyHex          = "a2f983853e61b3e27d94b7bf3d7094dd756ae
 
 internal class AppTest {
 
-    //var userPrivateKeyHex: String = ""
-    var userPublicKeyHex: String = "09c883f8c036bcf2607607379fd332374bdd2420990810d89b7af4fdf019e3e0423b07a0103388e62ac4775586f268ce3cb90acd688a6ccaab6d4035303e6acf"
+    var userPrivateKeyHex: String = ""
+    var userPublicKeyHex: String = ""
 
     @BeforeEach
     fun setupUser()  {
         val keyPair = Crypto.generateKeyPair()
-        //userPrivateKeyHex   = keyPair.private.hex
-        //userPublicKeyHex    = keyPair.public.hex
+        userPrivateKeyHex   = keyPair.private.hex
+        userPublicKeyHex    = keyPair.public.hex
     }
 
     @Test
