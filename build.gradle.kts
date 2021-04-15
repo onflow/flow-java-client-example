@@ -10,6 +10,7 @@ val USE_KOTLIN_APP          = project.findProperty("USE_KOTLIN_APP") == "true"
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven { url = uri("https://jitpack.io") }
     maven { url = uri("https://dl.bintray.com/ethereum/maven/") }
 }

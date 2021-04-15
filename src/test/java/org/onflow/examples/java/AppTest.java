@@ -1,5 +1,5 @@
 
-package org.onflow;
+package org.onflow.examples.java;
 
 import org.onflow.examples.java.App;
 import org.junit.jupiter.api.Test;
