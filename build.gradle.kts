@@ -1,28 +1,35 @@
+
 plugins {
+    kotlin("jvm") version "1.4.21"
+    java
     application
 }
 
+val FLOW_JVM_SDK_VERSION    = "0.2.0-SNAPSHOT"
+val USE_KOTLIN_APP          = project.findProperty("USE_KOTLIN_APP") == "true"
+
 repositories {
     mavenCentral()
+    mavenLocal()
     maven { url = uri("https://jitpack.io") }
     maven { url = uri("https://dl.bintray.com/ethereum/maven/") }
 }
 
 dependencies {
-    // Use JUnit Jupiter API for testing.
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
+    implementation("org.onflow:flow-jvm-sdk:${FLOW_JVM_SDK_VERSION}")
 
     // Use JUnit Jupiter Engine for testing.
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-
-    implementation("org.onflow:flow-jvm-sdk:0.1.1")
-    implementation("org.json:json:20201115")
-    implementation("org.ethereum:ethereumj-core:1.12.0-RELEASE")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.7.0")
 }
 
 application {
     // Define the main class for the application.
-    mainClass.set("org.onflow.App")
+    mainClass.set(if (USE_KOTLIN_APP) {
+        "org.onflow.examples.kotlin.App"
+    } else {
+        "org.onflow.examples.java.App"
+    })
 }
 
 tasks.test {
