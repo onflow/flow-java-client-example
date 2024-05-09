@@ -9,9 +9,9 @@ plugins {
 val FLOW_JVM_SDK_VERSION    = "1.0.1"
 val USE_KOTLIN_APP          = project.findProperty("USE_KOTLIN_APP") == "true"
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+tasks.withType<JavaCompile> {
+    sourceCompatibility = JavaVersion.VERSION_21.toString()
+    targetCompatibility = JavaVersion.VERSION_21.toString()
 }
 
 tasks.withType<KotlinCompile> {
@@ -20,7 +20,6 @@ tasks.withType<KotlinCompile> {
         freeCompilerArgs = listOf("-Xjsr305=strict", "-opt-in=kotlin.RequiresOptIn")
     }
 }
-
 
 repositories {
     mavenCentral()

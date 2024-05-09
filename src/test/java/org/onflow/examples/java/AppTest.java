@@ -2,9 +2,9 @@ package org.onflow.examples.java;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.onflow.sdk.Crypto;
-import org.onflow.sdk.FlowAddress;
-import org.onflow.sdk.KeyPair;
+import org.onflow.flow.sdk.FlowAddress;
+import org.onflow.flow.sdk.crypto.Crypto;
+import org.onflow.flow.sdk.crypto.KeyPair;
 
 import java.math.BigDecimal;
 

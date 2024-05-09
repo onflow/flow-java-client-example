@@ -7,27 +7,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.bouncycastle.util.encoders.Hex;
-import org.onflow.sdk.AddressField;
-import org.onflow.sdk.Crypto;
-import org.onflow.sdk.Flow;
-import org.onflow.sdk.FlowAccessApi;
-import org.onflow.sdk.FlowAccount;
-import org.onflow.sdk.FlowAccountKey;
-import org.onflow.sdk.FlowAddress;
-import org.onflow.sdk.FlowArgument;
-import org.onflow.sdk.FlowId;
-import org.onflow.sdk.FlowPublicKey;
-import org.onflow.sdk.FlowScript;
-import org.onflow.sdk.FlowTransaction;
-import org.onflow.sdk.FlowTransactionProposalKey;
-import org.onflow.sdk.FlowTransactionResult;
-import org.onflow.sdk.FlowTransactionStatus;
-import org.onflow.sdk.HashAlgorithm;
-import org.onflow.sdk.PrivateKey;
-import org.onflow.sdk.SignatureAlgorithm;
-import org.onflow.sdk.Signer;
-import org.onflow.sdk.StringField;
-import org.onflow.sdk.UFix64NumberField;
+import org.onflow.flow.sdk.*;
+import org.onflow.flow.sdk.cadence.AddressField;
+import org.onflow.flow.sdk.cadence.StringField;
+import org.onflow.flow.sdk.cadence.UFix64NumberField;
+import org.onflow.flow.sdk.crypto.Crypto;
+import org.onflow.flow.sdk.crypto.PrivateKey;
 
 public final class App {
 
@@ -115,7 +100,7 @@ public final class App {
     }
 
     private FlowId getLatestBlockID() {
-        return this.accessAPI.getLatestBlockHeader().getId();
+        return this.accessAPI.getLatestBlockHeader(true).getId();
     }
 
     private FlowAccountKey getAccountKey(FlowAddress address, int keyIndex) {
