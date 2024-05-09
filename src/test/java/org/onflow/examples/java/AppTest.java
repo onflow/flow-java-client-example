@@ -14,27 +14,24 @@ class AppTest {
 
     public static final String SERVICE_PRIVATE_KEY_HEX = "a2f983853e61b3e27d94b7bf3d7094dd756aead2a813dd5cf738e1da56fa9c17";
 
-    private FlowAddress serviceAccountAddress = new FlowAddress("f8d6e0586b0a20c7");
+    private final FlowAddress serviceAccountAddress = new FlowAddress("f8d6e0586b0a20c7");
     private String userPublicKeyHex;
-    private String userPrivateKeyHex;
 
     @BeforeEach
     void setupUser() {
         KeyPair keyPair = Crypto.generateKeyPair();
         this.userPublicKeyHex = keyPair.getPublic().getHex();
-        this.userPrivateKeyHex = keyPair.getPrivate().getHex();
     }
 
     @Test
-    void createAccount() throws Exception {
+    void createAccount() {
 
         App app = new App("localhost", 3569, SERVICE_PRIVATE_KEY_HEX);
 
         // service account address
-        var payer = serviceAccountAddress;
 
-        FlowAddress account = app.createAccount(payer, this.userPublicKeyHex);
-        assertTrue(account != null);
+        FlowAddress account = app.createAccount(serviceAccountAddress, this.userPublicKeyHex);
+        assertNotNull(account);
     }
 
     @Test
@@ -59,7 +56,7 @@ class AppTest {
     }
 
     @Test
-    void getAccountBalance() throws Exception {
+    void getAccountBalance() {
 
         App app = new App("localhost", 3569, SERVICE_PRIVATE_KEY_HEX);
         var balance = app.getAccountBalance(serviceAccountAddress);
