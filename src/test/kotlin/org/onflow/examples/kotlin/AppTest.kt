@@ -13,8 +13,8 @@ const val servicePrivateKeyHex          = "a2f983853e61b3e27d94b7bf3d7094dd756ae
 
 internal class AppTest {
 
-    var userPrivateKeyHex: String = ""
-    var userPublicKeyHex: String = ""
+    private var userPrivateKeyHex: String = ""
+    private var userPublicKeyHex: String = ""
 
     @BeforeEach
     fun setupUser()  {

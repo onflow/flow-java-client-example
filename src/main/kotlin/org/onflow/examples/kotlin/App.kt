@@ -14,7 +14,7 @@ internal class App(host: String, port: Int, privateKeyHex: String) {
 
     private val latestBlockID: FlowId get() = accessAPI.getLatestBlockHeader().id
 
-    fun getAccount(address: FlowAddress): FlowAccount = accessAPI.getAccountAtLatestBlock(address)!!
+    private fun getAccount(address: FlowAddress): FlowAccount = accessAPI.getAccountAtLatestBlock(address)!!
 
     fun getAccountBalance(address: FlowAddress): BigDecimal {
         val account = getAccount(address)
