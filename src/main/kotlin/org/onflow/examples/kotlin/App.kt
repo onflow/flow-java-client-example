@@ -1,25 +1,11 @@
 package org.onflow.examples.kotlin
 
+import org.onflow.flow.sdk.*
+import org.onflow.flow.sdk.cadence.AddressField
+import org.onflow.flow.sdk.cadence.StringField
+import org.onflow.flow.sdk.cadence.UFix64NumberField
+import org.onflow.flow.sdk.crypto.Crypto
 import java.math.BigDecimal
-import org.onflow.sdk.AddressField
-import org.onflow.sdk.Crypto
-import org.onflow.sdk.Flow
-import org.onflow.sdk.FlowAccount
-import org.onflow.sdk.FlowAccountKey
-import org.onflow.sdk.FlowAddress
-import org.onflow.sdk.FlowArgument
-import org.onflow.sdk.FlowId
-import org.onflow.sdk.FlowPublicKey
-import org.onflow.sdk.FlowScript
-import org.onflow.sdk.FlowTransaction
-import org.onflow.sdk.FlowTransactionProposalKey
-import org.onflow.sdk.FlowTransactionResult
-import org.onflow.sdk.FlowTransactionStatus
-import org.onflow.sdk.HashAlgorithm
-import org.onflow.sdk.SignatureAlgorithm
-import org.onflow.sdk.StringField
-import org.onflow.sdk.UFix64NumberField
-import org.onflow.sdk.bytesToHex
 
 internal class App(host: String, port: Int, privateKeyHex: String) {
 
@@ -151,6 +137,6 @@ internal class App(host: String, port: Int, privateKeyHex: String) {
         val txID = accessAPI.sendTransaction(tx)
 
         // wait for transaction to be sealed
-        val txResult = waitForSeal(txID)
+        waitForSeal(txID)
     }
 }

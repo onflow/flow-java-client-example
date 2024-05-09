@@ -9,6 +9,10 @@ plugins {
 val FLOW_JVM_SDK_VERSION    = "1.0.1"
 val USE_KOTLIN_APP          = project.findProperty("USE_KOTLIN_APP") == "true"
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.apply {
@@ -26,7 +30,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.onflow:flow-jvm-sdk:${FLOW_JVM_SDK_VERSION}")
+    implementation("org.onflow:flow-jvm-sdk:$FLOW_JVM_SDK_VERSION")
 
     // Use JUnit Jupiter Engine for testing.
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
