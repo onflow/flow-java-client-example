@@ -1,12 +1,22 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.4.21"
+    kotlin("jvm") version "1.9.22"
     java
     application
 }
 
-val FLOW_JVM_SDK_VERSION    = "1.0.0"
+val FLOW_JVM_SDK_VERSION    = "1.0.1"
 val USE_KOTLIN_APP          = project.findProperty("USE_KOTLIN_APP") == "true"
+
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions.apply {
+        jvmTarget = JavaVersion.VERSION_21.toString()
+        freeCompilerArgs = listOf("-Xjsr305=strict", "-opt-in=kotlin.RequiresOptIn")
+    }
+}
+
 
 repositories {
     mavenCentral()
