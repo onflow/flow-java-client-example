@@ -5,29 +5,16 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 import org.bouncycastle.util.encoders.Hex;
-import org.onflow.sdk.AddressField;
-import org.onflow.sdk.Crypto;
-import org.onflow.sdk.Flow;
-import org.onflow.sdk.FlowAccessApi;
-import org.onflow.sdk.FlowAccount;
-import org.onflow.sdk.FlowAccountKey;
-import org.onflow.sdk.FlowAddress;
-import org.onflow.sdk.FlowArgument;
-import org.onflow.sdk.FlowId;
-import org.onflow.sdk.FlowPublicKey;
-import org.onflow.sdk.FlowScript;
-import org.onflow.sdk.FlowTransaction;
-import org.onflow.sdk.FlowTransactionProposalKey;
-import org.onflow.sdk.FlowTransactionResult;
-import org.onflow.sdk.FlowTransactionStatus;
-import org.onflow.sdk.HashAlgorithm;
-import org.onflow.sdk.PrivateKey;
-import org.onflow.sdk.SignatureAlgorithm;
-import org.onflow.sdk.Signer;
-import org.onflow.sdk.StringField;
-import org.onflow.sdk.UFix64NumberField;
+import org.onflow.flow.sdk.*;
+import org.onflow.flow.sdk.cadence.AddressField;
+import org.onflow.flow.sdk.cadence.StringField;
+import org.onflow.flow.sdk.cadence.UFix64NumberField;
+import org.onflow.flow.sdk.crypto.Crypto;
+import org.onflow.flow.sdk.crypto.PrivateKey;
 
 public final class App {
 
@@ -40,7 +27,7 @@ public final class App {
     }
 
     public FlowAddress createAccount(FlowAddress payerAddress, String publicKeyHex) {
-        FlowAccountKey payerAccountKey = this.getAccountKey(payerAddress, 0);
+        FlowAccountKey payerAccountKey = this.getAccountKey(payerAddress);
         FlowAccountKey newAccountPublicKey = new FlowAccountKey(
                 0,
                 new FlowPublicKey(publicKeyHex),
@@ -51,8 +38,8 @@ public final class App {
                 false);
 
         FlowTransaction tx = new FlowTransaction(
-                new FlowScript(loadScript("create_account.cdc")),
-                Arrays.asList(new FlowArgument(new StringField(Hex.toHexString(newAccountPublicKey.getEncoded())))),
+                new FlowScript(Objects.requireNonNull(loadScript("create_account.cdc"))),
+                List.of(new FlowArgument(new StringField(Hex.toHexString(newAccountPublicKey.getEncoded())))),
                 this.getLatestBlockID(),
                 100L,
                 new FlowTransactionProposalKey(
@@ -60,7 +47,7 @@ public final class App {
                         payerAccountKey.getId(),
                         payerAccountKey.getSequenceNumber()),
                 payerAddress,
-                Arrays.asList(payerAddress),
+                List.of(payerAddress),
                 new ArrayList<>(),
                 new ArrayList<>());
 
@@ -80,9 +67,9 @@ public final class App {
             throw new Exception("FLOW amount must have exactly 8 decimal places of precision (e.g. 10.00000000)");
         }
 
-        FlowAccountKey senderAccountKey = this.getAccountKey(senderAddress, 0);
+        FlowAccountKey senderAccountKey = this.getAccountKey(senderAddress);
         FlowTransaction tx = new FlowTransaction(
-                new FlowScript(loadScript("transfer_flow.cdc")),
+                new FlowScript(Objects.requireNonNull(loadScript("transfer_flow.cdc"))),
                 Arrays.asList(
                         new FlowArgument(new UFix64NumberField(amount.toPlainString())),
                         new FlowArgument(new AddressField(recipientAddress.getBase16Value()))),
@@ -93,7 +80,7 @@ public final class App {
                         senderAccountKey.getId(),
                         senderAccountKey.getSequenceNumber()),
                 senderAddress,
-                Arrays.asList(senderAddress),
+                List.of(senderAddress),
                 new ArrayList<>(),
                 new ArrayList<>());
 
@@ -105,8 +92,7 @@ public final class App {
     }
 
     public FlowAccount getAccount(FlowAddress address) {
-        FlowAccount ret = this.accessAPI.getAccountAtLatestBlock(address);
-        return ret;
+        return this.accessAPI.getAccountAtLatestBlock(address);
     }
 
     public BigDecimal getAccountBalance(FlowAddress address) {
@@ -115,17 +101,16 @@ public final class App {
     }
 
     private FlowId getLatestBlockID() {
-        return this.accessAPI.getLatestBlockHeader().getId();
+        return this.accessAPI.getLatestBlockHeader(true).getId();
     }
 
-    private FlowAccountKey getAccountKey(FlowAddress address, int keyIndex) {
+    private FlowAccountKey getAccountKey(FlowAddress address) {
         FlowAccount account = this.getAccount(address);
-        return account.getKeys().get(keyIndex);
+        return account.getKeys().getFirst();
     }
 
     private FlowTransactionResult getTransactionResult(FlowId txID) {
-        FlowTransactionResult result = this.accessAPI.getTransactionResultById(txID);
-        return result;
+        return this.accessAPI.getTransactionResultById(txID);
     }
 
     private FlowTransactionResult waitForSeal(FlowId txID) {
@@ -147,23 +132,24 @@ public final class App {
 
     private FlowAddress getAccountCreatedAddress(FlowTransactionResult txResult) {
         if (!txResult.getStatus().equals(FlowTransactionStatus.SEALED)
-            || txResult.getErrorMessage().length() > 0) {
+            || !txResult.getErrorMessage().isEmpty()) {
             return null;
         }
 
-        String rez = txResult
-                .getEvents()
-                .get(0)
-                .getEvent()
-                .getValue()
+        String rez = Objects.requireNonNull(Objects.requireNonNull(txResult
+                        .getEvents()
+                        .getFirst()
+                        .getEvent()
+                        .getValue())
                 .getFields()[0]
                 .getValue()
-                .getValue().toString();
+                .getValue()).toString();
         return new FlowAddress(rez.substring(2));
     }
 
     private byte[] loadScript(String name) {
-        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(name);) {
+        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(name)) {
+            assert is != null;
             return is.readAllBytes();
         } catch (IOException e) {
             e.printStackTrace();

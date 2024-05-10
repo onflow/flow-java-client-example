@@ -4,16 +4,17 @@ import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.onflow.sdk.Crypto
-import org.onflow.sdk.FlowAddress
+import org.onflow.flow.sdk.FlowAddress
+import org.onflow.flow.sdk.crypto.Crypto
 
-val serviceAccountAddress: FlowAddress  = FlowAddress("f8d6e0586b0a20c7")
+
+val serviceAccountAddress: FlowAddress = FlowAddress("f8d6e0586b0a20c7")
 const val servicePrivateKeyHex          = "a2f983853e61b3e27d94b7bf3d7094dd756aead2a813dd5cf738e1da56fa9c17"
 
 internal class AppTest {
 
-    var userPrivateKeyHex: String = ""
-    var userPublicKeyHex: String = ""
+    private var userPrivateKeyHex: String = ""
+    private var userPublicKeyHex: String = ""
 
     @BeforeEach
     fun setupUser()  {
