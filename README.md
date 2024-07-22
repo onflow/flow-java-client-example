@@ -1,19 +1,7 @@
-# Java Flow Client Example
+# Flow JVM SDK Examples
 
-Example Java application using the [Flow JVM SDK](https://github.com/onflow/flow-jvm-sdk) to interact with Flow blockchain.
+This repository previously contained example Kotlin and Java applications that used the [Flow JVM SDK](https://github.com/onflow/flow-jvm-sdk) to interact with the Flow blockchain.
 
-## Usage
+## Update
 
-First, install the [Flow CLI](https://docs.onflow.org/flow-cli).
-
-Start the [Flow Emulator](https://docs.onflow.org/emulator) in the main directory of this repository:
-
-```sh
-flow emulator start -v
-```
-
-Then, in a separate terminal, run the application with Gradle:
-
-```sh
-./gradlew test -i
-```
+This repository has now been decommissioned. The Java/Kotlin SDK examples have been migrated to the [Flow JVM SDK](https://github.com/onflow/flow-jvm-sdk) repo as submodules. For the latest examples and documentation, please refer to the [Flow JVM SDK repository](https://github.com/onflow/flow-jvm-sdk).
